@@ -17,7 +17,7 @@ export function GiftProgress({ total, remaining }: GiftProgressProps) {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div className="text-sm text-gray-500 text-center">
+      <div className="text-xs md:text-sm text-gray-500 text-center">
         {Math.round(progress)}% alcançado
       </div>
     </div>

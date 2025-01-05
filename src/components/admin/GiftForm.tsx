@@ -14,14 +14,18 @@ interface GiftFormProps {
 export function GiftForm({ gift, onSubmit, onCancel }: GiftFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [priceValue, setPriceValue] = useState(gift?.totalPrice ? formatCurrencyInput(gift.totalPrice) : '');
+  const [contributedValue, setContributedValue] = useState(
+    gift ? formatCurrencyInput(gift.totalPrice - gift.remainingPrice) : ''
+  );
+  const [contributorsCount, setContributorsCount] = useState(gift?.contributors?.toString() || '0');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [previewImage, setPreviewImage] = useState<string>(gift?.image || '');
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewImage(reader.result as string);
@@ -35,6 +39,12 @@ export function GiftForm({ gift, onSubmit, onCancel }: GiftFormProps) {
     setPriceValue(formattedValue);
   };
 
+  const handleContributedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    const formattedValue = formatCurrencyInput(Number(value) / 100);
+    setContributedValue(formattedValue);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -43,31 +53,40 @@ export function GiftForm({ gift, onSubmit, onCancel }: GiftFormProps) {
       const formData = new FormData(e.currentTarget);
       const imageFile = fileInputRef.current?.files?.[0];
 
+      // Handle image
       if (imageFile) {
         const imageUrl = await uploadImage(imageFile);
         formData.set('image', imageUrl);
+      } else if (gift?.image) {
+        formData.set('image', gift.image);
       }
 
-      // Convert price from "R$ X.XXX,XX" to number
-      const priceStr = formData.get('price') as string;
-      const priceNumber = Number(priceStr.replace(/\D/g, '')) / 100;
-      formData.set('price', priceNumber.toString());
+      // Handle prices
+      const totalPrice = Number(priceValue.replace(/\D/g, '')) / 100;
+      const contributedAmount = Number(contributedValue.replace(/\D/g, '')) / 100;
+      
+      formData.set('price', totalPrice.toString());
+      formData.set('contributedAmount', contributedAmount.toString());
+      formData.set('contributors', contributorsCount);
 
       await onSubmit(formData);
-      toast.success(gift ? 'Presente atualizado!' : 'Presente adicionado!');
-      e.currentTarget.reset();
-      setPriceValue('');
-      setPreviewImage('');
+      if (!gift) {
+        formRef.current?.reset();
+        setPriceValue('');
+        setContributedValue('');
+        setContributorsCount('0');
+        setPreviewImage('');
+      }
     } catch (error) {
-      toast.error('Erro ao salvar presente');
       console.error('Error submitting gift:', error);
+      toast.error('Erro ao salvar presente');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       <FormField
         name="name"
         label="Nome do Presente"
@@ -103,11 +122,31 @@ export function GiftForm({ gift, onSubmit, onCancel }: GiftFormProps) {
       
       <FormField
         name="price"
-        label="Preço"
+        label="Preço Total"
         value={priceValue}
         onChange={handlePriceChange}
         required
       />
+
+      {gift && (
+        <>
+          <FormField
+            name="contributedAmount"
+            label="Valor já Contribuído"
+            value={contributedValue}
+            onChange={handleContributedChange}
+          />
+
+          <FormField
+            name="contributors"
+            label="Número de Contribuidores"
+            type="number"
+            min="0"
+            value={contributorsCount}
+            onChange={(e) => setContributorsCount(e.target.value)}
+          />
+        </>
+      )}
 
       <div className="flex gap-4">
         {onCancel && (

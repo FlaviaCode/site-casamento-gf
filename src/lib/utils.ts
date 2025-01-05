@@ -20,8 +20,19 @@ export function generatePixCode(value: number, key: string): string {
   return `00020126580014br.gov.bcb.pix0136${key}5204000053039865802BR5913Wedding Gift6009Sao Paulo62070503***63046123`;
 }
 
-export function formatPhone(phone: string): string {
-  return phone.replace(/\D/g, '')
-    .replace(/^(\d{2})(\d)/g, '($1) $2')
-    .replace(/(\d)(\d{4})$/, '$1-$2');
+export function formatCPF(value: string): string {
+  const numbers = value.replace(/\D/g, '');
+  return numbers
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .slice(0, 14);
+}
+
+export function formatPhone(value: string): string {
+  const numbers = value.replace(/\D/g, '');
+  return numbers
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .slice(0, 15);
 }

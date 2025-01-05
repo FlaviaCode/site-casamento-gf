@@ -8,7 +8,7 @@ import { ScrollButton } from '../components/ScrollButton';
 import { FormField } from '../components/FormField';
 import { LoadingHearts } from '../components/LoadingHearts';
 import { PageLoading } from '../components/PageLoading';
-import { addRSVP } from '../services/firebase';
+import { addRSVP } from '../services/firebase/rsvp';
 import { formatPhone } from '../lib/utils';
 import toast from 'react-hot-toast';
 
@@ -52,6 +52,7 @@ export function RSVP() {
       });
       setShowSuccessDialog(true);
     } catch (error) {
+      console.error('Error submitting RSVP:', error);
       toast.error('Erro ao enviar formulário. Por favor, tente novamente.');
     } finally {
       setIsSubmitting(false);

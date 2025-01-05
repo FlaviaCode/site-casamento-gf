@@ -1,59 +1,34 @@
 import { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function ScrollButton() {
-  const [showButtons, setShowButtons] = useState(false);
-  const [atBottom, setAtBottom] = useState(false);
+  const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      
-      setShowButtons(scrollY > 100); // Reduced threshold to show buttons earlier
-      setAtBottom(scrollY + windowHeight >= documentHeight - 100);
+      setShowButton(window.scrollY > 100);
     };
 
-    // Initial check
-    handleScroll();
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollTo = (position: 'top' | 'bottom') => {
-    const target = position === 'top' ? 0 : document.documentElement.scrollHeight;
-    window.scrollTo({
-      top: target,
-      behavior: 'smooth'
-    });
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="fixed right-6 bottom-6 flex flex-col gap-2 z-40">
-      {showButtons && !atBottom && (
-        <button
-          onClick={() => scrollTo('bottom')}
-          className="p-2 bg-blue-400 text-white rounded-full shadow-lg hover:bg-blue-500 transition-colors animate-fadeIn"
-          aria-label="Scroll to bottom"
-        >
-          <ChevronDown className="w-5 h-5" />
-        </button>
+    <button
+      onClick={scrollToTop}
+      className={cn(
+        'fixed right-4 bottom-20 md:bottom-6 p-3 bg-blue-400 text-white rounded-full shadow-lg',
+        'hover:bg-blue-500 transition-all duration-300 z-40',
+        showButton ? 'opacity-100 visible' : 'opacity-0 invisible'
       )}
-      {showButtons && (
-        <button
-          onClick={() => scrollTo('top')}
-          className={cn(
-            "p-2 bg-blue-400 text-white rounded-full shadow-lg hover:bg-blue-500 transition-colors",
-            "animate-slideIn"
-          )}
-          aria-label="Scroll to top"
-        >
-          <ChevronUp className="w-5 h-5" />
-        </button>
-      )}
-    </div>
+      aria-label="Scroll to top"
+    >
+      <ChevronUp className="w-5 h-5" />
+    </button>
   );
 }

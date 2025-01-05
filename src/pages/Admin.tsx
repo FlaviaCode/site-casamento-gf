@@ -6,21 +6,28 @@ import { useStore } from '../store/useStore';
 import { Gift } from '../types';
 import { GiftForm } from '../components/admin/GiftForm';
 import { GiftList } from '../components/admin/GiftList';
-import { addGift, updateGift, deleteGift } from '../services/firebase/gifts';
+import { addGift, updateGift, updateGiftContributions, deleteGift, subscribeToGifts } from '../services/firebase/gifts';
 import { exportRSVPs, exportGifts } from '../services/exports';
 import toast from 'react-hot-toast';
 
 export function Admin() {
   const navigate = useNavigate();
-  const { gifts, isAdmin, setIsAdmin } = useStore();
+  const { gifts, isAdmin, setIsAdmin, setGifts } = useStore();
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) {
       navigate('/login');
+      return;
     }
-  }, [isAdmin, navigate]);
+
+    const unsubscribe = subscribeToGifts((updatedGifts) => {
+      setGifts(updatedGifts);
+    });
+
+    return () => unsubscribe();
+  }, [isAdmin, navigate, setGifts]);
 
   const handleLogout = async () => {
     try {
@@ -48,6 +55,7 @@ export function Admin() {
       setShowForm(false);
       toast.success('Presente adicionado com sucesso!');
     } catch (error) {
+      console.error('Error adding gift:', error);
       toast.error('Erro ao adicionar presente');
     }
   };
@@ -63,9 +71,19 @@ export function Admin() {
       };
 
       await updateGift(selectedGift.id, updates);
+
+      // Handle contribution updates separately
+      const contributedAmount = Number(formData.get('contributedAmount'));
+      const contributorsCount = Number(formData.get('contributors'));
+      
+      if (!isNaN(contributedAmount) && !isNaN(contributorsCount)) {
+        await updateGiftContributions(selectedGift.id, contributedAmount, contributorsCount);
+      }
+
       setSelectedGift(null);
       toast.success('Presente atualizado com sucesso!');
     } catch (error) {
+      console.error('Error updating gift:', error);
       toast.error('Erro ao atualizar presente');
     }
   };

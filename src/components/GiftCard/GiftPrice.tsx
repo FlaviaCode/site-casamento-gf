@@ -7,7 +7,7 @@ interface GiftPriceProps {
 export function GiftPrice({ remainingPrice }: GiftPriceProps) {
   return (
     <p className="text-gray-600 text-center">
-      Valor restante: <span className="font-bold text-[17px]">{formatCurrency(remainingPrice)}</span>
+      Valor restante: <span className="font-bold text-sm md:text-[17px]">{formatCurrency(remainingPrice)}</span>
     </p>
   );
 }
