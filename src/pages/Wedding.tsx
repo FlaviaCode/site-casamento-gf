@@ -67,7 +67,7 @@ END:VCALENDAR`;
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="text-4xl md:text-6xl text-white font-light tracking-wider">
-            MARIA & PAULO
+            GUILHERME & FLÁVIA
           </h1>
         </div>
       </section>
